@@ -42,6 +42,18 @@ That generates 60 fake income documents, has three scripted stand-in models answ
 
 Other commands: `evalpond gen` (make the task set), `evalpond run --model NAME` (run one model), `evalpond compare RUN_A RUN_B`, `evalpond report`, `evalpond calibrate` (check the AI grader against your own judgment). Models live in `models.yaml`; API keys come from environment variables, never from the repo.
 
+## Second task pack: summarizing PRDs
+
+The first pack reads income documents. The second one tests something every PM has seen: a model summarizing a product requirements document (PRD).
+
+```bash
+uv run evalpond gen --pack prd
+uv run evalpond run --model mock-strong --taskset tasksets/prd_v1 --out runs-prd
+uv run evalpond report runs-prd --taskset tasksets/prd_v1 --out site-prd
+```
+
+40 synthetic PRDs for made-up products. Each summary is checked for the goals, the success metric and its current target, what is out of scope, and the key requirements. It is also checked for made-up content: numbers that are not in the document, a dropped idea presented as the plan, an old target that a changelog replaced. Ten tasks have a missing section, and the right answer says "not stated" instead of guessing. All checks are plain key-phrase and number checks, so no AI grader is needed. See [docs/PRD_PACK.md](docs/PRD_PACK.md).
+
 ## Using it for your own tasks
 
 The harness does not care about income documents. Any task set in the same simple format (input, expected answer, how to grade) works. Income documents are the demo set.
