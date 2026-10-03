@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+runs/*
+!runs/sample-*.json
+.env
+tasksets/*/docs/*.pdf
+dist/
