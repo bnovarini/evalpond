@@ -1,6 +1,6 @@
 [project]
 name = "evalpond"
-version = "0.1.0"
+version = "0.2.0"
 description = "A small eval harness for LLM document pipelines, with a plain-language report. Demo set: synthetic proof-of-income documents."
 readme = "README.md"
 license = { text = "MIT" }
