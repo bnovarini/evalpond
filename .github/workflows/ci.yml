@@ -16,3 +16,10 @@ jobs:
           uv run evalpond run --model mock-strong --judge mock-judge --run-id ci-smoke
           uv run evalpond gen --pack prd
           uv run evalpond run --model mock-strong --taskset tasksets/prd_v1 --out runs-prd --run-id ci-prd
+      - name: Task authoring smoke test (add-task, validate, run, explain)
+        run: |
+          uv run evalpond add-task --taskset /tmp/mine --failure-mode "Invents a window" --severity high --question "Days to return?" --input "Gift cards are final sale." --expected '{"days": null}' --exact days
+          uv run evalpond add-task --taskset /tmp/mine --failure-mode "Invents a window" --question "Days to return?" --input "Returns within 30 days." --expected '{"days": 30}' --exact days
+          uv run evalpond validate /tmp/mine
+          uv run evalpond run --model mock-strong --taskset /tmp/mine --out /tmp/mine-runs --run-id smoke
+          uv run evalpond explain /tmp/mine-runs/smoke.json --taskset /tmp/mine --json > /dev/null
