@@ -1,0 +1,13 @@
+Summarize the product requirements document (PRD) below for a busy executive.
+
+Rules:
+- At most 120 words.
+- Cover: the goals, the success metric with its current target, what is out of scope, and the key requirements.
+- Use only facts that are in the document. Do not add numbers, features or benefits that the document does not state.
+- If the document says an idea was dropped or considered, do not present it as part of the plan.
+- If a number was changed, use the latest one.
+- If the document does not state something you were asked to cover (for example no success metric or no out-of-scope list), say "not stated" for that item. Do not guess.
+
+Return one JSON object and nothing else, with one key: "summary" (a string).
+
+{{documents}}
