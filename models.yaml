@@ -2,10 +2,16 @@
 models:
   - name: mock-strong
     adapter: mock
-    params: {skill: 0.9, seed: 1}
+    params: {skill: 0.85, seed: 1}
+  - name: mock-strong-b   # a near-identical second model, to show what "no clear difference" looks like
+    adapter: mock
+    params: {skill: 0.87, seed: 5}
   - name: mock-weak
     adapter: mock
-    params: {skill: 0.55, seed: 2}
+    params: {skill: 0.5, seed: 2}
+  - name: mock-judge
+    adapter: mock   # deterministic keyword grader for CI; swap in a real model for real judging
+    params: {}
   # - name: claude
   #   adapter: anthropic
   #   model: claude-sonnet-4-5   # check the provider's current model ids
