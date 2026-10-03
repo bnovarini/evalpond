@@ -1,0 +1,7 @@
+Answer the task below using only the material provided. If the material does not say, use null for that key. Do not guess or add facts that are not in the material.
+
+Task: {{question}}
+
+Return one JSON object and nothing else, with these keys: {{keys}}
+
+{{documents}}
