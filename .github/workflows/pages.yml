@@ -20,6 +20,11 @@ jobs:
       - run: uv sync
       - name: Build the sample report from the scripted mock models (no API keys)
         run: uv run evalpond quickstart --no-open --out site
+      - name: Build the PRD-summary sample report (also mock models, no API keys)
+        run: |
+          uv run evalpond gen --pack prd
+          for m in mock-weak mock-strong mock-strong-b; do uv run evalpond run --model $m --taskset tasksets/prd_v1 --out runs-prd --run-id $m; done
+          uv run evalpond report runs-prd --taskset tasksets/prd_v1 --out site/prd --title "evalpond: PRD summaries"
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site
