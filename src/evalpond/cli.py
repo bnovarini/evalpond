@@ -17,9 +17,14 @@ def _csv(s: str | None) -> set[str] | None:
 
 
 def cmd_gen(a: argparse.Namespace) -> int:
-    from .generator.taskset import build
-
-    m = build(a.seed, Path(a.out))
+    if a.pack == "prd":
+        from .generator.prd import build
+        out = a.out or "tasksets/prd_v1"
+    else:
+        from .generator.taskset import build
+        out = a.out or DEFAULT_TASKSET
+    a.out = out
+    m = build(a.seed, Path(out))
     print(f"Generated {m['task_count']} synthetic tasks in {a.out} (seed {a.seed}).")
     print(f"  by category: {m['by_category']}  difficulty: {m['by_difficulty']}  split: {m['by_split']}")
     return 0
@@ -143,7 +148,8 @@ def build_parser() -> argparse.ArgumentParser:
     sub = p.add_subparsers(dest="cmd")
     g = sub.add_parser("gen", help="generate the synthetic task set (seeded)")
     g.add_argument("--seed", type=int, default=42)
-    g.add_argument("--out", default=DEFAULT_TASKSET)
+    g.add_argument("--out", default=None, help="where to write the task set")
+    g.add_argument("--pack", choices=["income", "prd"], default="income", help="income documents (default) or product requirement documents")
     g.set_defaults(fn=cmd_gen)
     r = sub.add_parser("run", help="run a model over a task set")
     r.add_argument("--model", required=True, help="model name from models.yaml")
