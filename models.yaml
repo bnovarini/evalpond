@@ -1,0 +1,16 @@
+# Model configs. Keys are read from the environment, never stored here.
+models:
+  - name: mock-strong
+    adapter: mock
+    params: {skill: 0.9, seed: 1}
+  - name: mock-weak
+    adapter: mock
+    params: {skill: 0.55, seed: 2}
+  # - name: claude
+  #   adapter: anthropic
+  #   model: claude-sonnet-4-5   # check the provider's current model ids
+  #   api_key_env: ANTHROPIC_API_KEY
+  # - name: gpt
+  #   adapter: openai
+  #   model: gpt-4o-mini
+  #   api_key_env: OPENAI_API_KEY
