@@ -1,0 +1,13 @@
+An income package is COMPLETE only if all of these hold:
+1. It contains two pay stubs for the same person and employer, covering consecutive pay periods.
+2. It contains a bank statement whose period includes the pay date of both stubs.
+3. The name on the bank statement matches the name on the pay stubs.
+
+Check the documents against these rules.
+
+Return one JSON object and nothing else, with these keys:
+- complete: true or false
+- missing: a list of problems, using only these codes: "second_pay_stub", "statement_coverage", "name_mismatch". Empty list if complete.
+- explanation: one or two plain sentences saying what is wrong, or that the package is complete. Do not mention documents that are not in the package.
+
+{{documents}}
