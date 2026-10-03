@@ -1,0 +1,3 @@
+# SHA-256 of lowercase terms we keep out of the repo without writing them down.
+# Add a line with: python -c "import hashlib;print(hashlib.sha256(b'term').hexdigest())"
+c278be9e224723ac90087b41a7b39f53fbe57be34a75b27d5f0659a7c130e977
