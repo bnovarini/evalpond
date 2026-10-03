@@ -1,4 +1,4 @@
-"""Command line entry point: evalpond gen | run | report | compare | quickstart | calibrate."""
+"""Command line entry point: evalpond gen | run | report | compare | quickstart | calibrate | validate | add-task | explain."""
 from __future__ import annotations
 
 import argparse
@@ -30,6 +30,9 @@ def cmd_gen(a: argparse.Namespace) -> int:
     return 0
 
 
+DEFAULT_COST_CAP = 2.0
+
+
 def cmd_run(a: argparse.Namespace) -> int:
     from .runner import CostCapExceeded, load_models, run_taskset
 
@@ -37,6 +40,16 @@ def cmd_run(a: argparse.Namespace) -> int:
     if a.model not in models:
         print(f"Unknown model '{a.model}'. Available: {', '.join(models)}", file=sys.stderr)
         return 2
+    cfg = models[a.model]
+    if cfg.adapter != "mock":
+        # A cost cap only works if spend can be estimated, so a real model needs prices in models.yaml.
+        if not (float(cfg.params.get("price_in", 0)) or float(cfg.params.get("price_out", 0))):
+            print(f"'{a.model}' has no price_in / price_out in models.yaml, so the cost cap cannot work. "
+                  "Add the provider's current prices (USD per million tokens) under params, then run again.", file=sys.stderr)
+            return 2
+        if a.cost_cap is None and not a.no_cost_cap:
+            a.cost_cap = DEFAULT_COST_CAP
+            print(f"Cost cap: ${DEFAULT_COST_CAP:.2f} (default for real models; pass --cost-cap N to change it).", file=sys.stderr)
     judge = None
     if a.judge:
         from .graders.judge import build_judge
@@ -142,6 +155,83 @@ def cmd_quickstart(a: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_validate(a: argparse.Namespace) -> int:
+    import json
+
+    from .taskkit import render_validation, validate_taskset
+
+    rep = validate_taskset(Path(a.taskset))
+    print(json.dumps(rep, indent=1) if a.json else render_validation(rep))
+    return 0 if rep["ok"] else 1
+
+
+def _task_spec(a: argparse.Namespace) -> tuple[dict, list[str]]:
+    import json
+
+    from .schema import GradeSpec
+    from .taskkit import rubric_from_flags
+
+    if a.from_json:
+        spec = json.loads(Path(a.from_json).read_text())
+        return spec, spec.pop("inputs", [])
+    inputs = list(a.input or []) + [Path(p).read_text() for p in (a.input_file or [])]
+    expected = json.loads(Path(a.expected_file).read_text() if a.expected_file else (a.expected or "{}"))
+    grading = []
+    if a.exact:
+        grading.append(GradeSpec(method="exact", fields=_csv_list(a.exact)).model_dump())
+    if a.check:
+        grading.append(GradeSpec(method="rubric", rubric=rubric_from_flags(a.check)).model_dump())
+    if a.judge_question:
+        grading.append(GradeSpec(method="judge", judge_question=a.judge_question, judge_notes=a.judge_notes or "").model_dump())
+    spec = {"id": a.id, "failure_mode": a.failure_mode, "category": a.category, "difficulty": a.difficulty,
+            "split": a.split, "plain_title": a.title, "why_it_matters": a.why, "what_good_looks_like": a.good,
+            "question": a.question, "prompt_template": a.prompt_template, "expected": expected, "grading": grading,
+            "tags": list(a.tag or []) + ([f"sev:{a.severity}"] if a.severity else [])}
+    return {k: v for k, v in spec.items() if v not in (None, "")}, inputs
+
+
+def _csv_list(s: str) -> list[str]:
+    return [x.strip() for x in s.split(",") if x.strip()]
+
+
+def cmd_add_task(a: argparse.Namespace) -> int:
+    import json
+
+    from .taskkit import add_task
+
+    try:
+        spec, inputs = _task_spec(a)
+        res = add_task(Path(a.taskset), spec, inputs, dry_run=a.dry_run)
+    except (ValueError, OSError) as e:
+        print(f"Could not read the task: {e}", file=sys.stderr)
+        return 2
+    if a.json:
+        print(json.dumps(res, indent=1, default=str))
+    else:
+        for i in res["errors"]:
+            print(f"ERROR   {i['message']}")
+        for i in res["warnings"]:
+            print(f"warning {i['message']}")
+        if res["ok"]:
+            print(f"{'Checked (not written)' if a.dry_run else 'Added'} task {res['id']}." + ("" if a.dry_run else f" Next: evalpond validate {a.taskset}"))
+        else:
+            print(f"Task {res['id']} was not added.")
+    return 0 if res["ok"] else 1
+
+
+def cmd_explain(a: argparse.Namespace) -> int:
+    import json
+
+    from .explain import explain_run, render_explanation
+    from .schema import Run
+
+    run = Run(**json.loads(Path(a.run).read_text()))
+    ts = Path(a.taskset) if a.taskset else Path("tasksets") / run.taskset
+    e = explain_run(run, ts if ts.exists() else None, top=a.top)
+    print(json.dumps(e, indent=1, default=str) if a.json else render_explanation(e))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="evalpond", description=__doc__)
     p.add_argument("--version", action="version", version=f"evalpond {__version__}")
@@ -162,6 +252,7 @@ def build_parser() -> argparse.ArgumentParser:
     r.add_argument("--split", help="dev, test, or dev,test (default: both)")
     r.add_argument("--concurrency", type=int, default=4)
     r.add_argument("--cost-cap", type=float, help="abort when estimated spend passes this many USD")
+    r.add_argument("--no-cost-cap", action="store_true", help="real models only: run without the default $2 cap")
     r.add_argument("--native", action="store_true", help="send PDFs to the model (default: send the text layer)")
     r.add_argument("--judge", help="model name from models.yaml to use as the AI grader")
     r.set_defaults(fn=cmd_run)
@@ -187,6 +278,42 @@ def build_parser() -> argparse.ArgumentParser:
     q.add_argument("--out", default="site")
     q.add_argument("--no-open", action="store_true", help="do not open the report in a browser")
     q.set_defaults(fn=cmd_quickstart)
+    v = sub.add_parser("validate", help="check a task set: will the harness understand it, can each task fail?")
+    v.add_argument("taskset", nargs="?", default=DEFAULT_TASKSET)
+    v.add_argument("--json", action="store_true")
+    v.set_defaults(fn=cmd_validate)
+    t = sub.add_parser("add-task", help="add one task to a task set (checked before it is written)")
+    t.add_argument("--taskset", default="tasksets/mine")
+    t.add_argument("--from-json", help="a JSON file with the whole task (and an `inputs` list of document texts)")
+    t.add_argument("--failure-mode", help="the failure this task probes, in plain words; becomes the report category")
+    t.add_argument("--id")
+    t.add_argument("--category")
+    t.add_argument("--difficulty", choices=["easy", "medium", "hard"])
+    t.add_argument("--split", choices=["dev", "test"])
+    t.add_argument("--title", help="plain-language title shown in the report")
+    t.add_argument("--why", help="why this matters, one sentence")
+    t.add_argument("--good", help="what a right answer contains")
+    t.add_argument("--question", help="what the model is asked to do with the input")
+    t.add_argument("--prompt-template", help="default generic_v1; or a name in <taskset>/prompts/")
+    t.add_argument("--input", action="append", help="the document text (repeatable)")
+    t.add_argument("--input-file", action="append", help="a text file to use as the document (repeatable)")
+    t.add_argument("--expected", help='the right answer as JSON, e.g. \'{"decision": "deny"}\'. Use null for "the input does not say"')
+    t.add_argument("--expected-file")
+    t.add_argument("--exact", help="comma-separated fields in --expected to compare exactly")
+    t.add_argument("--check", action="append", help="rubric criterion 'id|plain text|check'; checks: mentions:, any_of:a|b, none_of:a|b, max_words:N, field_equals:k=v")
+    t.add_argument("--judge-question", help="AI-graded: the yes/no question the grader answers")
+    t.add_argument("--judge-notes")
+    t.add_argument("--severity", choices=["high", "medium", "low"], help="how bad is this failure for users; the explanation fixes high ones first")
+    t.add_argument("--tag", action="append")
+    t.add_argument("--dry-run", action="store_true", help="check the task without writing anything")
+    t.add_argument("--json", action="store_true")
+    t.set_defaults(fn=cmd_add_task)
+    x = sub.add_parser("explain", help="explain one run in plain language (--json for agents)")
+    x.add_argument("run", help="a run JSON from `evalpond run`")
+    x.add_argument("--taskset", help="defaults to tasksets/<name the run used>")
+    x.add_argument("--top", type=int, default=8, help="how many weakest answers to list")
+    x.add_argument("--json", action="store_true")
+    x.set_defaults(fn=cmd_explain)
     return p
 
 
