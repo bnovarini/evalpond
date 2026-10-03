@@ -40,7 +40,9 @@ def test_repo_has_no_flagged_terms():
 def test_generated_task_set_has_no_flagged_terms(tmp_path):
     plain, hashed = _lists()
     build(42, tmp_path / "ts")
-    bad = {p.name: h for p in (tmp_path / "ts").rglob("*") if p.is_file() and p.suffix != ".pdf" and (h := _scan(p, plain, hashed))}
+    from evalpond.generator.prd import build as build_prd
+    build_prd(42, tmp_path / "prd")
+    bad = {p.name: h for p in tmp_path.rglob("*") if p.is_file() and p.suffix != ".pdf" and (h := _scan(p, plain, hashed))}
     assert not bad, bad
 
 
