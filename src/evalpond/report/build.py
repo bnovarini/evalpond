@@ -81,7 +81,7 @@ def build_data(runs_dir: Path, taskset_dir: Path, labels_path: Path | None = Non
     task_list = load_tasks(taskset_dir)
     tasks = {t.id: t for t in task_list}
     manifest = yaml.safe_load((taskset_dir / "manifest.yaml").read_text())
-    data: dict = {"title": title, "manifest": manifest, "categories": CATEGORY_NAMES, "copy": {"plain": C.PLAIN, "details": C.DETAILS}}
+    data: dict = {"title": title, "manifest": manifest, "categories": {**CATEGORY_NAMES, **manifest.get("categories", {})}, "copy": {"plain": C.PLAIN, "details": C.DETAILS}}
     data["tasks"] = [{
         "id": t.id, "category": t.category, "difficulty": t.difficulty, "split": t.split, "title": t.plain_title,
         "why": t.why_it_matters, "good": t.what_good_looks_like, "tags": t.tags, "expected": t.expected,
