@@ -1,6 +1,8 @@
 """Rubric grader: a list of yes/no criteria with weights. Programmatic checks first, judge for the rest."""
 from __future__ import annotations
 
+import re
+
 from ..schema import GradeResult, GradeSpec, RubricItem, Task
 from . import normalize as N
 from .judge import candidate_text
@@ -30,6 +32,19 @@ def check_item(item: RubricItem, task: Task, out, judge) -> tuple[bool, str]:
         return _field_equals(arg, parsed), "programmatic"
     if kind == "set_equals":
         return _set_equals(arg, parsed, task.expected), "programmatic"
+    if kind == "any_of":
+        low = candidate_text(task, out).lower()
+        return any(t.strip().lower() in low for t in arg.split("|") if t.strip()), "programmatic"
+    if kind == "none_of":
+        low = candidate_text(task, out).lower()
+        return not any(t.strip().lower() in low for t in arg.split("|") if t.strip()), "programmatic"
+    if kind == "max_words":
+        return len(candidate_text(task, out).split()) <= int(arg), "programmatic"
+    if kind == "numbers_subset":
+        # every number in the answer must appear in the document's current requirements; small whole numbers are ignored
+        allowed = {str(x) for x in task.expected.get("allowed_numbers", [])}
+        used = set(re.findall(r"\d+(?:\.\d+)?", candidate_text(task, out).replace(",", "")))
+        return all(n in allowed or (n.isdigit() and int(n) <= 10) for n in used), "programmatic"
     if kind == "mentions":
         return arg.lower() in candidate_text(task, out).lower(), "programmatic"
     if judge is None:
