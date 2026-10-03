@@ -13,4 +13,4 @@ jobs:
       - name: End to end on the mock model (no API keys)
         run: |
           uv run evalpond gen
-          uv run evalpond run --model mock-strong --run-id ci-smoke
+          uv run evalpond run --model mock-strong --judge mock-judge --run-id ci-smoke
