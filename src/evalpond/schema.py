@@ -24,9 +24,11 @@ class GradeSpec(BaseModel):
     weight: float = 1.0
     fields: list[str] = Field(default_factory=list)  # exact: fields to compare
     normalize: str = "money_date_name"
+    tolerance: float = 0.005  # exact: allowed absolute difference on money fields
     rubric: list[RubricItem] = Field(default_factory=list)  # rubric method
     judge_question: str = ""  # judge method: what the judge assesses
     judge_notes: str = ""  # ground-truth notes shown to the judge only
+    judge_keywords: list[str] = Field(default_factory=list)  # used only by the mock judge
 
 
 class Task(BaseModel):
