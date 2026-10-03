@@ -1,0 +1,10 @@
+{
+  "name": "evalpond",
+  "version": "0.2.0",
+  "description": "Turn a PM's failure modes into validated eval tasks, run them, and read the results in plain words. Skills that operate the evalpond CLI.",
+  "author": { "name": "bnovarini" },
+  "homepage": "https://bnovarini.github.io/evalpond/",
+  "repository": "https://github.com/bnovarini/evalpond",
+  "license": "MIT",
+  "keywords": ["evals", "llm", "product-management", "failure-modes", "evaluation"]
+}
