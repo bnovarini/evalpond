@@ -1,0 +1,16 @@
+# Real payroll, banking and verification vendors. None of these may appear in this repo's
+# documents, generator code or task data. One lowercase word per line.
+adp
+paychex
+gusto
+workday
+quickbooks
+intuit
+equifax
+experian
+transunion
+plaid
+wellsfargo
+chase
+citibank
+bankofamerica
