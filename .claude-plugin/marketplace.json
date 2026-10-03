@@ -1,0 +1,12 @@
+{
+  "name": "evalpond",
+  "metadata": { "description": "Skills for turning failure modes into evals and reading the results" },
+  "owner": { "name": "bnovarini" },
+  "plugins": [
+    {
+      "name": "evalpond",
+      "source": "./",
+      "description": "Write tasks from failure modes, run them with a cost cap, explain results in plain words, audit a run. Operates the evalpond CLI."
+    }
+  ]
+}
