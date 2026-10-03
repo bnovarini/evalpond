@@ -15,3 +15,14 @@ def test_mock_is_deterministic():
     a = MockAdapter(cfg).run("p", ref)
     b = MockAdapter(cfg).run("p", ref)
     assert a.text == b.text
+
+
+def test_quickstart_end_to_end(tmp_path, monkeypatch):
+    from pathlib import Path
+
+    from evalpond.cli import main
+    root = Path(__file__).resolve().parents[1]
+    monkeypatch.chdir(root)
+    assert main(["quickstart", "--runs", str(tmp_path / "runs"), "--out", str(tmp_path / "site"), "--no-open"]) == 0
+    assert (tmp_path / "site" / "index.html").exists()
+    assert len(list((tmp_path / "runs").glob("*.json"))) == 3
