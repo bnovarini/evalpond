@@ -1,0 +1,11 @@
+Read the product requirements document (PRD) below and list what it says is out of scope.
+
+Rules:
+- At most 60 words.
+- List only what the document explicitly rules out. Do not list things that are in scope, and do not list ideas that were considered and dropped as if they were scope decisions.
+- Use only facts that are in the document. Do not add numbers or items.
+- If the document has no out-of-scope list, say "not stated".
+
+Return one JSON object and nothing else, with one key: "summary" (a string).
+
+{{documents}}
