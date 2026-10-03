@@ -26,7 +26,7 @@ function runLabel(id){return runById[id]?runById[id].label:id;}
 
 function viewSummary(){
   const root=h('div');
-  root.append(h('h1',null,'How did each run do?'),h('p',{class:'lead'},`${D.manifest.task_count} synthetic tasks about reading income documents. A task counts as right only if every part of the answer is right.`));
+  root.append(h('h1',null,'How did each run do?'),h('p',{class:'lead'},`${D.manifest.task_count} synthetic tasks about ${D.manifest.topic||'reading income documents'}. A task counts as right only if every part of the answer is right.`));
   if(!D.runs.length){root.append(h('div',{class:'card'},'No runs yet. Run `evalpond run --model mock-strong` and rebuild the report.'));return root;}
   const g=h('div',{class:'grid'});
   D.runs.forEach(r=>{
