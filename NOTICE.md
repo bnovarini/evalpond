@@ -7,3 +7,9 @@
 - This project uses no material, tooling, data or internal terminology from any employer.
 - Every generated document carries a visible "SYNTHETIC - NOT A REAL DOCUMENT" watermark and a metadata flag.
 - The defect injector creates internal inconsistencies for evaluation purposes only. Nothing here is meant to make a document look authentic.
+
+## Credits: the agent skills
+
+The skills in `skills/` follow the shape pioneered by [ai-evals-course/evals-skills](https://github.com/ai-evals-course/evals-skills) (Hamel Husain and Shreya Shankar, Apache License 2.0): a small router skill that sends the person to a targeted skill, and targeted skills that carry one workflow each. The packaging layout (`.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json`, `skills/<name>/SKILL.md`, install through `npx skills add`) follows the same convention. The skills here are written fresh for evalpond and operate this tool; no text was copied from that repository. Its licence applies to that project: https://github.com/ai-evals-course/evals-skills/blob/main/LICENSE
+
+For general eval practice (error analysis, judge validation, RAG evals) use those skills. They are complementary: they help you find failure modes in real traces, and the evalpond skills turn the failure modes you already know into runnable tasks.
