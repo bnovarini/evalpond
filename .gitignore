@@ -6,5 +6,5 @@ __pycache__/
 runs/*
 !runs/sample-*.json
 .env
-tasksets/*/docs/*.pdf
+tasksets/income_v1/
 dist/
