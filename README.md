@@ -5,9 +5,9 @@
 
 **A small tool that shows product managers how evals work.** It runs a fixed set of tasks against an AI model, grades every answer, and produces a report that says, in plain words, whether a change made things better or worse.
 
-I built this to learn how eval loops work. It is a small harness, not a production eval platform.
+evalpond is a small harness for learning how eval loops work. It is not a production eval platform.
 
-> **Status: under construction.** The build is happening in public, step by step. This README describes where the project is going; sections are marked when they are not working yet.
+> **Status: working, still being polished.** The task generator, graders, runner, statistics, report and a no-keys quickstart all work and are tested. Real-model runs (Anthropic, OpenAI, any OpenAI-compatible endpoint) are implemented but have not been run against live APIs yet, so treat them as untested until the first sample run is committed.
 
 ## What is an eval?
 
@@ -24,12 +24,19 @@ An eval is a unit test for AI behavior you cannot check with `output == expected
 
 This is a working tool with a good report and one short guide. It is not a tutorial site. There are no lessons or quizzes by design.
 
-## Quick start (not working yet)
+## Quick start (about 10 minutes, no API keys)
+
+You need Python 3.11+ and [uv](https://docs.astral.sh/uv/).
 
 ```bash
+git clone https://github.com/bnovarini/evalpond && cd evalpond
 uv sync
 uv run evalpond quickstart
 ```
+
+That generates 60 fake income documents, has three scripted stand-in models answer them, grades every answer, and opens a report. The stand-ins are fake on purpose, so it costs nothing. In the report, compare `mock-weak` with `mock-strong` (a clear improvement), then `mock-strong` with `mock-strong-b` (no clear difference, which is the lesson).
+
+Other commands: `evalpond gen` (make the task set), `evalpond run --model NAME` (run one model), `evalpond compare RUN_A RUN_B`, `evalpond report`, `evalpond calibrate` (check the AI grader against your own judgment). Models live in `models.yaml`; API keys come from environment variables, never from the repo.
 
 ## Using it for your own tasks
 
