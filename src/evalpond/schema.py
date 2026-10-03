@@ -39,6 +39,7 @@ class Task(BaseModel):
     documents: list[str] = Field(default_factory=list)  # PDF paths, relative to the task set
     text_documents: list[str] = Field(default_factory=list)  # OCR-style text fallbacks
     prompt_template: str
+    question: str = ""  # fills {{question}} in the prompt template (used by generic_v1)
     expected: dict[str, Any]
     grading: list[GradeSpec]
     tags: list[str] = Field(default_factory=list)
