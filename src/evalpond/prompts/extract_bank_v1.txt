@@ -1,0 +1,10 @@
+You are reading a bank statement. Report only what the document states.
+
+Return one JSON object and nothing else, with these keys:
+- account_holder: the account holder's name
+- period_start: first day of the statement period, YYYY-MM-DD
+- period_end: last day of the statement period, YYYY-MM-DD
+- income_deposits: a list of payroll deposits from an employer (not transfers, refunds or person-to-person payments), each {"date": "YYYY-MM-DD", "amount": number}. Use the statement period to work out the year.
+- closing_balance: the closing balance (a number)
+
+{{documents}}
