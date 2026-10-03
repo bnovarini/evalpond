@@ -25,6 +25,7 @@ testpaths = ["tests"]
 
 [tool.ruff]
 line-length = 100
+extend-exclude = ["notebooks"]
 
 [tool.ruff.lint]
 ignore = ["C408", "E741", "DTZ", "PLW1510", "S603", "S607"]
