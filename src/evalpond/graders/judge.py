@@ -98,7 +98,7 @@ def build_judge(cfg: ModelConfig, cache_path: Path | None = None) -> Judge:
 
 def candidate_text(task: Task, out) -> str:
     parsed = out.parsed or {}
-    return str(parsed.get("explanation") or parsed.get("summary") or out.text or "")
+    return str(parsed.get("explanation") or parsed.get("summary") or parsed.get("answer") or out.text or "")
 
 
 def grade_judge(spec: GradeSpec, task: Task, out, judge: Judge | None) -> GradeResult:
