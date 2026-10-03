@@ -1,0 +1,11 @@
+You are estimating a person's monthly income from pay stubs. Rules:
+- Use the pay frequency on the stub (weekly = 52 pays a year, biweekly = 26, semi-monthly = 24, monthly = 12).
+- Count the regular pay and any overtime that appears on the stub. Do NOT count one-time bonuses.
+- Annualize one period of that recurring pay, then divide by 12. Round to cents.
+
+Return one JSON object and nothing else, with these keys:
+- pay_frequency: weekly, biweekly, semi-monthly or monthly
+- bonus_included: true if you counted a bonus in the monthly figure, otherwise false
+- monthly_income: the monthly income as a number
+
+{{documents}}
