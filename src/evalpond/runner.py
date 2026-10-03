@@ -35,12 +35,21 @@ def load_models(path: Path) -> dict[str, ModelConfig]:
     return {m["name"]: ModelConfig(**m) for m in data["models"]}
 
 
-def prompt_text(name: str) -> str:
+def prompt_text(name: str, taskset_dir: Path | None = None) -> str:
+    """A task set can ship its own prompts in <taskset>/prompts/NAME.txt; otherwise the built-in ones are used."""
+    if taskset_dir is not None and (taskset_dir / "prompts" / f"{name}.txt").exists():
+        return (taskset_dir / "prompts" / f"{name}.txt").read_text()
     return resources.files("evalpond").joinpath("prompts", f"{name}.txt").read_text()
 
 
-def prompt_hash(name: str) -> str:
-    return hashlib.sha256(prompt_text(name).encode()).hexdigest()[:12]
+def prompt_hash(name: str, taskset_dir: Path | None = None) -> str:
+    return hashlib.sha256(prompt_text(name, taskset_dir).encode()).hexdigest()[:12]
+
+
+def answer_keys(task: Task) -> str:
+    """The JSON keys a model is asked for: the exact-graded fields, or one free-text `answer`."""
+    fields = [f for g in task.grading if g.method == "exact" for f in g.fields]
+    return ", ".join(dict.fromkeys(fields)) if fields else 'answer (a string)'
 
 
 def build_prompt(task: Task, taskset_dir: Path, native: bool) -> tuple[str, DocumentRef]:
@@ -49,7 +58,8 @@ def build_prompt(task: Task, taskset_dir: Path, native: bool) -> tuple[str, Docu
         block = "The documents are attached."
     else:
         block = "\n\n".join(f"=== Document {i + 1} ===\n{t}" for i, t in enumerate(texts))
-    prompt = prompt_text(task.prompt_template).replace("{{documents}}", block)
+    prompt = (prompt_text(task.prompt_template, taskset_dir).replace("{{documents}}", block)
+              .replace("{{question}}", task.question).replace("{{keys}}", answer_keys(task)))
     ref = DocumentRef(pdf_paths=[str(taskset_dir / p) for p in task.documents],
                       text="\n\n".join(texts), prefer_native=native, task_id=task.id, oracle=task.expected)
     return prompt, ref
@@ -112,10 +122,10 @@ def run_taskset(taskset_dir: Path, cfg: ModelConfig, *, run_id: str, out_dir: Pa
         run = Run(**json.loads(out_path.read_text()))
     else:
         run = Run(run_id=run_id, label=label or run_id, model=cfg, taskset=manifest["name"],
-                  taskset_version=f"gen{manifest['generator_version']}-seed{manifest['seed']}",
+                  taskset_version=f"gen{manifest.get('generator_version', 'user')}-seed{manifest.get('seed', 0)}",
                   judge_model=getattr(judge, "name", ""), git_sha=git_sha(),
                   started_at=datetime.now(UTC).isoformat(timespec="seconds"), repeats=repeats,
-                  prompt_hashes={n: prompt_hash(n) for n in sorted({t.prompt_template for t in tasks})})
+                  prompt_hashes={n: prompt_hash(n, taskset_dir) for n in sorted({t.prompt_template for t in tasks})})
     done = {(r.task_id, r.repeat) for r in run.results}
     todo = [(t, k) for t in tasks for k in range(repeats) if (t.id, k) not in done]
     adapter = build_adapter(cfg)
