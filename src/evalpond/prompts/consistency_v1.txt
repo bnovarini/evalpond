@@ -1,0 +1,8 @@
+You are checking whether the documents contradict themselves. You are NOT deciding whether anything is fraudulent. Only report concrete inconsistencies you can point to in the documents: arithmetic that does not add up, dates that are out of order, or details that differ between documents.
+
+Return one JSON object and nothing else, with these keys:
+- verdict: "consistent" or "inconsistent"
+- issues: a list of codes, using only these: "ytd_mismatch" (year-to-date gross does not match period number times current gross), "net_math" (net pay is not gross minus the listed deductions and taxes), "dates_out_of_order", "deposit_mismatch" (bank deposit differs from stub net pay), "employer_mismatch" (employer name differs between stub and bank deposit). Empty list if consistent.
+- explanation: one or two plain sentences pointing to the specific numbers or dates. Do not say a document is fake or fraudulent.
+
+{{documents}}
