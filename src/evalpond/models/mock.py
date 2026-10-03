@@ -44,6 +44,14 @@ class MockAdapter:
             return ModelOutput(text="{}", parsed={}, error="mock adapter needs an oracle")
         rng = _rng(self.name, self.seed, document.task_id, document.repeat)
         answer: dict[str, Any] = dict(document.oracle)
+        allowed = answer.pop("allowed_numbers", None)  # grader-only data, never part of an answer
+        variants = answer.pop("mock_variants", None)
+        if variants is not None or allowed is not None:
+            if rng.random() >= self.skill and variants:
+                answer = {"summary": rng.choice(variants)}
+            text = json.dumps({"summary": answer["summary"]})
+            return ModelOutput(text=text, parsed={"summary": answer["summary"]}, latency_s=round(0.2 + rng.random() * 0.4, 3),
+                               input_tokens=len(prompt) // 4, output_tokens=len(text) // 4, cost_usd=self.cost_per_call, doc_mode="text")
         if rng.random() >= self.skill:
             # a miss: corrupt one or two fields (never the whole answer), like a real near-miss
             keys = [k for k in answer if k != "explanation"]
