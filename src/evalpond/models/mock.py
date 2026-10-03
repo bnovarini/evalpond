@@ -43,15 +43,15 @@ class MockAdapter:
         if not document.oracle:
             return ModelOutput(text="{}", parsed={}, error="mock adapter needs an oracle")
         rng = _rng(self.name, self.seed, document.task_id, document.repeat)
-        answer: dict[str, Any] = {}
-        for key, value in document.oracle.items():
-            if value is None:
-                # "not present" case: a weak model sometimes invents something
-                answer[key] = "N/A" if rng.random() < self.skill else "Unknown Corp"
-            elif rng.random() < self.skill:
-                answer[key] = value
-            else:
-                answer[key] = _corrupt(value, rng)
+        answer: dict[str, Any] = dict(document.oracle)
+        if rng.random() >= self.skill:
+            # a miss: corrupt one or two fields (never the whole answer), like a real near-miss
+            keys = [k for k in answer if k != "explanation"]
+            for k in rng.sample(keys, k=min(len(keys), rng.choice([1, 1, 2]))):
+                v = answer[k]
+                answer[k] = ("Unknown Corp" if rng.random() < 0.5 else "N/A") if v is None else _corrupt(v, rng)
+            if "explanation" in answer and rng.random() < 0.5:
+                answer["explanation"] = "Everything looks fine."
         text = json.dumps(answer)
         return ModelOutput(
             text=text,
